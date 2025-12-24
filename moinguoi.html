@@ -1,0 +1,454 @@
+<!DOCTYPE html><html lang="vi"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Gift for You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #020205;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            user-select: none; 
+        }
+
+        /* --- PHẦN INTRO (MÀN HÌNH ĐEN) --- */
+        #introOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 2s ease-in-out; /* Mờ dần chậm rãi */
+        }
+
+        #introText {
+            color: #FFD700;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            min-height: 30px;
+            text-align: center;
+        }
+
+        #startBtn {
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 30px;
+            opacity: 0; 
+            transition: all 0.5s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #startBtn:hover {
+            background: #FFD700;
+            color: #000;
+            box-shadow: 0 0 15px #FFD700;
+        }
+
+        /* --- PHẦN LÁ THƯ (POPUP) --- */
+        #letterOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #letterOverlay.show { opacity: 1; pointer-events: auto; }
+
+        .letter-paper {
+            background-color: #fffdf0;
+            width: 300px;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #d4af37;
+            position: relative;
+        }
+
+        #letterOverlay.show .letter-paper { transform: scale(1); }
+
+        .close-btn {
+            position: absolute; top: 10px; right: 15px;
+            font-size: 24px; cursor: pointer; color: #8b0000;
+        }
+
+        .letter-content h2 {
+            font-family: 'Pinyon Script', cursive;
+            color: #d4af37; font-size: 2.5rem; margin: 0 0 10px 0;
+        }
+
+        .letter-content p {
+            font-family: 'Dancing Script', cursive;
+            color: #333; font-size: 1.6rem; line-height: 1.4; margin: 20px 0;
+        }
+
+        .stamp { font-size: 1.5rem; opacity: 0.8; color: #8b0000; margin-top: 20px; }
+
+        /* --- TEXT CHÍNH (Merry Christmas) --- */
+        .text-overlay {
+            position: absolute; top: 10%; left: 50%;
+            transform: translateX(-50%); text-align: center;
+            z-index: 10; pointer-events: none;
+            opacity: 0; /* Ẩn ban đầu */
+            transition: opacity 3s ease; /* Hiện ra từ từ */
+        }
+
+        .text-overlay.show { opacity: 1; }
+
+        h1 {
+            font-family: 'Pinyon Script', cursive; font-size: 5rem; margin: 0;
+            color: #FFD700; 
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .sub-text {
+            color: #e6e6e6; font-size: 1.1rem; margin-top: 10px;
+            font-weight: 300; letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+        
+        canvas { display: block; cursor: pointer; }
+    </style>
+<script defer="" data-domain="caythongnoel.tiiny.site" src="js/plausible.js"></script><script type="text/javascript" src="js/ad-script.js"></script><meta property="og:url" content="https://caythongnoel.tiiny.site/" data-id="th-modified"><meta property="og:type" content="website" data-id="th-modified"></head>
+<body>
+
+    <audio id="bgMusic" loop="">
+        <source src="giangsinh.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="introOverlay">
+        <div id="introText"></div>
+        <button id="startBtn" onclick="finishIntro()">Mở Quà 🎁</button>
+    </div>
+
+    <div id="letterOverlay">
+        <div class="letter-paper">
+            <span class="close-btn" onclick="closeLetter()">×</span>
+            <div class="letter-content">
+                <h2>Merry Christmas</h2>
+                <p id="letterMessage">...</p>
+                <div class="stamp">🎅 Tloc 🎄</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-overlay" id="mainText">
+        <h1>Merry Christmas</h1>
+        <p class="sub-text">Chạm vào hộp quà để nhận lời chúc nhé!</p>
+    </div>
+
+    <canvas id="treeCanvas"></canvas>
+
+    <script>
+        // --- XỬ LÝ INTRO ---
+        const introTextDiv = document.getElementById('introText');
+        const startBtn = document.getElementById('startBtn');
+        const introOverlay = document.getElementById('introOverlay');
+        const bgMusic = document.getElementById('bgMusic');
+        const mainText = document.getElementById('mainText');
+        
+        // BIẾN QUAN TRỌNG: Điều khiển việc cây có mọc hay chưa
+        let startGrowing = false; 
+
+        const message = "Gửi đến mọi người..."; 
+        let index = 0;
+
+        function typeWriter() {
+            if (index < message.length) {
+                introTextDiv.innerHTML += message.charAt(index);
+                index++;
+                setTimeout(typeWriter, 100);
+            } else {
+                startBtn.style.opacity = 1;
+            }
+        }
+        window.onload = function() { setTimeout(typeWriter, 500); };
+
+        function finishIntro() {
+            // 1. Phát nhạc
+            bgMusic.volume = 0.5;
+            bgMusic.play().catch(e => console.log("Audio play failed:", e));
+
+            // 2. Ẩn màn hình đen
+            introOverlay.style.opacity = 0;
+            
+            // 3. KÍCH HOẠT CÂY MỌC
+            // Chúng ta kích hoạt ngay khi bấm nút để cây mọc lên cùng lúc màn hình sáng dần
+            startGrowing = true; 
+
+            // 4. Xóa hẳn intro và hiện chữ Merry Christmas
+            setTimeout(() => {
+                introOverlay.style.display = 'none';
+                mainText.classList.add('show');
+            }, 1500);
+        }
+
+        // --- CODE CANVAS ---
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const letterOverlay = document.getElementById('letterOverlay');
+        const letterMessage = document.getElementById('letterMessage');
+
+        const wishesList = [
+            "Merry Christmas! Chúc bạn và gia đình một mùa lễ ấm áp, an lành. ❤️",
+            "Mong mọi điều ước của bạn đều thành hiện thực. trong túi có tiền,trong tay có người mình yêu ",
+            "Chúc bạn luôn mạnh khỏe, vui vẻ và bớt lo âu nhé. 🍀",
+            "Năm nay Ông già Noel bảo rằng bạn đã rất ngoan! 🎁",
+            "Chúc bạn học tốt, làm tốt và sớm đạt được mục tiêu nha! 🏆",
+            "Mong mọi điều tốt lành nhất sẽ đến với bạn trong mùa lễ hội này! 💑",
+            "Đừng quên ăn thật ngon, mặc thật ấm nhé! 🍕"
+        ];
+
+        let width, height;
+        function resize() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+        }
+        window.addEventListener('resize', resize); resize();
+
+        const config = {
+            particleCount: 2500, treeHeight: 500, baseRadius: 200, focalLength: 400,
+            spinSpeed: 0.003, spawnSpeed: 0.005, loops: 10, giftCount: 12
+        };
+
+        const colors = [
+            { c: 'rgba(50, 205, 50,', weight: 0.6 }, { c: 'rgba(255, 60, 60,', weight: 0.15 },
+            { c: 'rgba(255, 230, 80,', weight: 0.15 }, { c: 'rgba(255, 255, 255,', weight: 0.1 }
+        ];
+        const boxColors = ['#D32F2F', '#C2185B', '#7B1FA2', '#1976D2', '#00796B', '#FBC02D', '#E64A19'];
+        const ribbonColors = ['#FFD700', '#FFFFFF', '#C0C0C0'];
+
+        function getRandomColor(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function getRandomTreeColor() {
+             let r = Math.random(); let accumulated = 0;
+            for(let color of colors) {
+                accumulated += color.weight; if(r <= accumulated) return color.c;
+            } return colors[0].c;
+        }
+
+        let rotationY = 0; let particles = []; let gifts = []; 
+        let spawnProgress = 0; // Tiến trình mọc cây (0 -> 1)
+        let isDragging = false; let lastX = 0; let isLetterOpen = false;
+
+        const santaImage = new Image();
+        santaImage.src = 'santa.png'; 
+        
+        let santaConfig = {
+            loaded: false, x: -350, y: height * 0.15, width: 350, height: 120,
+            color: '#FFD700', recoloredImage: null 
+        };
+
+        santaImage.onload = function() {
+            santaConfig.loaded = true;
+            const ratio = santaImage.naturalHeight / santaImage.naturalWidth;
+            santaConfig.height = santaConfig.width * ratio;
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = santaImage.naturalWidth; offCanvas.height = santaImage.naturalHeight;
+            const offCtx = offCanvas.getContext('2d');
+            offCtx.drawImage(santaImage, 0, 0);
+            offCtx.globalCompositeOperation = 'source-in';
+            offCtx.fillStyle = santaConfig.color;
+            offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+            santaConfig.recoloredImage = offCanvas;
+        };
+
+        function drawSanta() {
+            if (!santaConfig.loaded || !santaConfig.recoloredImage) return;
+            const speedX = (width + santaConfig.width) / 120;
+            santaConfig.x += speedX;
+            if (santaConfig.x > width) {
+                santaConfig.x = -santaConfig.width;
+                santaConfig.y = height * (0.1 + Math.random() * 0.2);
+            }
+            ctx.globalAlpha = 0.9;
+            ctx.drawImage(santaConfig.recoloredImage, santaConfig.x, santaConfig.y, santaConfig.width, santaConfig.height);
+            ctx.globalAlpha = 1.0; 
+        }
+
+        function createGifts() { gifts = []; for(let i = 0; i < config.giftCount; i++) spawnSingleGift(); }
+        function spawnSingleGift() {
+            gifts.push({
+                x: Math.random() * width, y: Math.random() * -height, 
+                speed: 2 + Math.random() * 3, size: 30 + Math.random() * 20,
+                boxColor: getRandomColor(boxColors), ribbonColor: getRandomColor(ribbonColors),
+                angle: Math.random() * Math.PI * 2, spinSpeed: (Math.random() - 0.5) * 0.05
+            });
+        }
+        function drawGifts() {
+            gifts.forEach((g) => {
+                g.y += g.speed; g.angle += g.spinSpeed;
+                if(g.y > height + g.size) { g.y = -g.size; g.x = Math.random() * width; }
+                ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(g.angle);
+                ctx.shadowBlur = 10; ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.fillStyle = g.boxColor; ctx.fillRect(-g.size/2, -g.size/2, g.size, g.size);
+                ctx.shadowBlur = 0; ctx.fillStyle = g.ribbonColor;
+                const rw = g.size / 5;
+                ctx.fillRect(-g.size/2, -rw/2, g.size, rw); ctx.fillRect(-rw/2, -g.size/2, rw, g.size);
+                ctx.restore();
+            });
+        }
+
+        function openLetter() {
+            const randomWish = wishesList[Math.floor(Math.random() * wishesList.length)];
+            letterMessage.textContent = randomWish;
+            letterOverlay.classList.add('show');
+            isLetterOpen = true; 
+        }
+        function closeLetter() {
+            letterOverlay.classList.remove('show');
+            setTimeout(() => { isLetterOpen = false; }, 300); 
+        }
+
+        function handleStart(e) {
+            if (isLetterOpen) return;
+            let clickX, clickY;
+            if(e.type === 'touchstart') { clickX = e.touches[0].clientX; clickY = e.touches[0].clientY; } 
+            else { clickX = e.clientX; clickY = e.clientY; }
+
+            let giftClicked = false;
+            for (let i = gifts.length - 1; i >= 0; i--) {
+                let g = gifts[i];
+                let dist = Math.sqrt((clickX - g.x)**2 + (clickY - g.y)**2);
+                if (dist < g.size * 1.5) { 
+                    gifts.splice(i, 1); spawnSingleGift(); openLetter();
+                    giftClicked = true; break; 
+                }
+            }
+            if (!giftClicked) { isDragging = true; lastX = clickX; }
+        }
+        function handleMove(e) {
+            if (!isDragging || isLetterOpen) return;
+            let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const dx = clientX - lastX; rotationY += dx * 0.005; lastX = clientX;
+        }
+        function handleEnd() { isDragging = false; }
+
+        canvas.addEventListener('mousedown', handleStart);
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('touchstart', handleStart, {passive: false});
+        window.addEventListener('touchmove', handleMove, {passive: false});
+        window.addEventListener('touchend', handleEnd);
+
+        function createParticles() {
+            particles = [];
+            for (let i = 0; i < config.particleCount; i++) {
+                const progress = i / config.particleCount;
+                let y = (config.treeHeight / 2) - (progress * config.treeHeight); y += (Math.random() - 0.5) * 10; 
+                let radius = config.baseRadius * (1 - Math.pow(progress, 0.8)); radius += (Math.random() - 0.5) * 10;
+                const angle = progress * Math.PI * 2 * config.loops + Math.random()*0.3;
+                let colorBase = getRandomTreeColor();
+                let sizeBase = Math.random() * 2 + 0.5;
+                if(colorBase.includes('255, 60, 60') || colorBase.includes('255, 230, 80')) sizeBase = Math.random() * 3 + 2;
+                particles.push({ x: radius * Math.cos(angle), z: radius * Math.sin(angle), y: y, color: colorBase, size: sizeBase, blinkOffset: Math.random() * 100, currentAlpha: 0 });
+            }
+        }
+        function drawStar(cx, cy, outerRadius, innerRadius, opacity) {
+            let rot = Math.PI / 2 * 3; let x = cx; let y = cy; let step = Math.PI / 5;
+            ctx.beginPath(); ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < 5; i++) {
+                x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius; ctx.lineTo(x, y); rot += step;
+                x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius; ctx.lineTo(x, y); rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius); ctx.closePath();
+            ctx.fillStyle = `rgba(255, 235, 59, ${opacity})`; ctx.shadowBlur = 40 * opacity; ctx.shadowColor = "#FFFF00"; ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        createParticles(); createGifts();
+
+        // --- VÒNG LẶP ANIMATION ---
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            let grd = ctx.createLinearGradient(0, 0, 0, height);
+            grd.addColorStop(0, "#000000"); grd.addColorStop(1, "#0a0a1a");
+            ctx.fillStyle = grd; ctx.fillRect(0, 0, width, height);
+
+            drawSanta(); drawGifts();
+
+            // CHỈ TĂNG TIẾN TRÌNH MỌC CÂY KHI INTRO ĐÃ XONG (startGrowing = true)
+            if (startGrowing && spawnProgress < 1) {
+                spawnProgress += config.spawnSpeed;
+            }
+
+            if(!isDragging && !isLetterOpen) rotationY += config.spinSpeed;
+
+            const cy = Math.cos(rotationY); const sy = Math.sin(rotationY);
+            
+            // Tính toán ngưỡng hiển thị dựa trên spawnProgress
+            // spawnProgress = 0: Ngưỡng ở đáy (chưa hiện gì)
+            // spawnProgress = 1: Ngưỡng ở đỉnh (hiện hết)
+            const currentYThreshold = (config.treeHeight / 2) - (spawnProgress * config.treeHeight);
+
+            let renderedParticles = [];
+            particles.forEach(p => {
+                // Chỉ vẽ những hạt nằm DƯỚI ngưỡng đang mọc
+                if (p.y > currentYThreshold) {
+                    if (p.currentAlpha < 1) p.currentAlpha += 0.05;
+                    let x1 = p.x * cy - p.z * sy; let z1 = p.x * sy + p.z * cy;
+                    let scale = config.focalLength / (config.focalLength + z1 + 400);
+                    renderedParticles.push({ x2d: x1 * scale + width / 2, y2d: p.y * scale + height / 2 + 50, scale: scale, z: z1, color: p.color, size: p.size, blinkOffset: p.blinkOffset, alpha: p.currentAlpha });
+                }
+            });
+            renderedParticles.sort((a, b) => b.z - a.z);
+            renderedParticles.forEach(p => {
+                if (p.scale > 0) {
+                    ctx.beginPath();
+                    let blink = 0.6 + 0.4 * Math.sin(Date.now() * 0.005 + p.blinkOffset);
+                    ctx.fillStyle = `${p.color} ${p.alpha * blink})`;
+                    ctx.arc(p.x2d, p.y2d, p.size * p.scale, 0, Math.PI * 2); ctx.fill();
+                }
+            });
+
+            if (spawnProgress > 0.95) {
+                let starOpacity = (spawnProgress - 0.95) * 20; if (starOpacity > 1) starOpacity = 1;
+                let topY = -config.treeHeight / 2 - 10; 
+                let scaleTop = config.focalLength / (config.focalLength + 0 + 400);
+                let topX2d = width / 2; let topY2d = topY * scaleTop + height / 2 + 50;
+                ctx.save(); ctx.translate(topX2d, topY2d); ctx.rotate(rotationY * 0.8);
+                drawStar(0, 0, 25 * scaleTop, 12 * scaleTop, starOpacity); ctx.restore();
+            }
+
+            // Tuyết rơi
+            let snow = [];
+            // (Đoạn này đã gộp vào logic dưới để code gọn)
+        }
+        
+        let snow = Array.from({length: 150}, () => ({ x: Math.random() * width, y: Math.random() * height, speed: Math.random() * 1.5 + 0.5, radius: Math.random() * 2 }));
+        function drawSnow() {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; ctx.beginPath();
+            for(let s of snow) {
+                ctx.moveTo(s.x, s.y); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+                s.y += s.speed; s.x += Math.sin(s.y * 0.02) * 0.5;
+                if(s.y > height) s.y = -5; if(s.x > width) s.x = 0; if(s.x < 0) s.x = width;
+            } ctx.fill();
+        }
+        
+        function loop() { animate(); drawSnow(); requestAnimationFrame(loop); }
+        loop();
+
+    </script>
+
+</body></html>
